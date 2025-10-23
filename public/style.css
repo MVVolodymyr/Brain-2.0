@@ -6,35 +6,145 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex; 
     flex-direction: column;
     height: 100vh; 
-    background-color: #f0f0f0; 
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #333;
+}
+
+/* ===========================================
+   LOGIN PAGE STYLES
+   =========================================== */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.login-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-card h1 {
+    color: #667eea;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.login-card h2 {
+    color: #666;
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    font-weight: 400;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-top: 10px;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.login-info {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.login-info p {
+    margin-bottom: 8px;
+    color: #666;
+}
+
+.login-info code {
+    background: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    color: #667eea;
+}
+
+/* ===========================================
+   EVENTS PAGE STYLES
+   =========================================== */
+
+/* Events page specific styles */
+body.events-page {
+    background: #f8f9fa;
 }
 
 /* 1. Header - ФІКСОВАНА висота для розміщення форми створення */
 .fixed-header {
-    /* *** ВИПРАВЛЕНО: Висота змінена з 1vh на фіксовану, щоб вмістити форму *** */
-    height: 70px; /* Достатньо місця для одного рядка форми */
+    height: 80px;
     width: 100%;
     position: fixed; 
     top: 0;
     left: 0;
-    background-color: #ffffff; 
-    border-bottom: 1px solid #ccc; 
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     z-index: 10; 
-    padding: 5px 20px 0 20px; /* Внутрішній відступ для центрування форми */
+    padding: 10px 20px;
 }
 
 /* 2. Тіло сторінки - скролабельне */
 .scrollable-body {
     flex-grow: 1; 
     overflow-y: auto; 
-    /* *** ВИПРАВЛЕНО: Відступ зверху тепер відповідає висоті хедера *** */
-    padding-top: 70px; 
+    padding-top: 80px; 
     padding: 20px; 
-    background-color: #f9f9f9;
+    background-color: #f8f9fa;
 }
 
 /* Стилі для табличного вигляду */

@@ -1,21 +1,37 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <title>Auth</title>
-    <link rel="stylesheet" href="/style.css"> </head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизація - Brain 2.0</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
 <body>
-    <div class="container">
-        <h1>Вхід</h1>
-        <form id="loginForm">
-            <label for="username">User Name:</label>
-            <input type="text" id="username" name="username" required>
+    <div class="login-container">
+        <div class="login-card">
+            <h1>Brain 2.0</h1>
+            <h2>Вхід в систему</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Ім'я користувача:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
 
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
+                <div class="form-group">
+                    <label for="password">Пароль:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
 
-            <button type="submit">Увійти</button>
-        </form>
+                <button type="submit" class="login-btn">Увійти</button>
+            </form>
+            <div class="login-info">
+                <p><strong>Тестові дані:</strong></p>
+                <p>Користувач: <code>user</code></p>
+                <p>Пароль: <code>pass</code></p>
+            </div>
+        </div>
     </div>
 
-    <script src="script.js"></script> </body>
+    <script src="/login.js"></script>
+</body>
 </html>
