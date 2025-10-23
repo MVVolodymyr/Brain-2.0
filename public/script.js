@@ -55,7 +55,7 @@ async function loadEvents() {
             return;
         }
 
-        events.forEach(event => {
+        events.forEach((event, index) => {
             // Форматування дати
             const formatOptions = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
             const createdDate = new Date(event.created_date).toLocaleString('uk-UA', formatOptions);
@@ -64,14 +64,33 @@ async function loadEvents() {
             const row = document.createElement('div');
             row.className = 'table-row data-row';
 
-            row.innerHTML = `
-                <div class="cell event-name-col">${event.name || 'N/A'}</div>
-                <div class="cell created-col">${createdDate}</div>
-                <div class="cell modified-col">${lastUpdate}</div>
-                <div class="cell actions-col delete-action">
-                    <button class="action-btn delete-btn" onclick="handleDeleteEvent('${event.id}', '${event.name.replace(/'/g, "\\'")}')">🗑️</button>
-                </div>
-            `;
+            // Create cells using DOM methods instead of innerHTML to avoid escaping issues
+            const nameCell = document.createElement('div');
+            nameCell.className = 'cell event-name-col';
+            nameCell.textContent = event.name || 'N/A';
+            
+            const createdCell = document.createElement('div');
+            createdCell.className = 'cell created-col';
+            createdCell.textContent = createdDate;
+            
+            const modifiedCell = document.createElement('div');
+            modifiedCell.className = 'cell modified-col';
+            modifiedCell.textContent = lastUpdate;
+            
+            const actionsCell = document.createElement('div');
+            actionsCell.className = 'cell actions-col delete-action';
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'action-btn delete-btn';
+            deleteBtn.textContent = '🗑️';
+            deleteBtn.onclick = () => handleDeleteEvent(event.id, event.name);
+            
+            actionsCell.appendChild(deleteBtn);
+            
+            row.appendChild(nameCell);
+            row.appendChild(createdCell);
+            row.appendChild(modifiedCell);
+            row.appendChild(actionsCell);
             
             EVENT_LIST_CONTAINER.appendChild(row);
         });
