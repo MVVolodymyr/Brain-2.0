@@ -4,60 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Список Подій</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css"> 
 </head>
 <body>
 
     <header class="fixed-header">
-        </header>
+        <form id="create-event-form" class="event-table"> 
+            
+            <input 
+                type="text" 
+                id="event-name-input" 
+                placeholder="Введіть назву нової події" 
+                required 
+                class="cell event-name-col"
+            >
+
+            <div class="cell created-col"></div>
+            <div class="cell modified-col"></div>
+
+            <div class="cell actions-col add-action">
+                <button type="submit" class="action-btn add-btn">+</button>
+            </div>
+            
+        </form>
+    </header>
 
     <main class="scrollable-body">
-
-        <div class="event-table">
+        
+        <div class="event-table" id="event-list-container"> 
 
             <div class="table-row header-row">
                 <div class="cell event-name-col">Event name</div>
                 <div class="cell created-col">Created</div>
                 <div class="cell modified-col">Last modified</div>
-                <div class="cell actions-col add-action">
-                    <button class="action-btn add-btn" id="openModalBtn">+</button>
-                </div>
-            </div>
-
-            <div class="table-row data-row">
-                <div class="cell event-name-col">Hallowen event</div>
-                <div class="cell created-col">21.10.2025</div>
-                <div class="cell modified-col">22.10.2025</div>
-                <div class="cell actions-col delete-action">
-                    <button class="action-btn delete-btn">🗑️</button>
-                </div>
-            </div>
-
-            <div class="table-row data-row">
-                <div class="cell event-name-col">my first event</div>
-                <div class="cell created-col">10.10.2025</div>
-                <div class="cell modified-col">12.10.2025</div>
-                <div class="cell actions-col delete-action">
-                    <button class="action-btn delete-btn">🗑️</button>
-                </div>
+                <div class="cell actions-col">Дії</div>
             </div>
 
             </div>
     </main>
 
-    <div id="createEventModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2>Створити нову подію</h2>
-            <form id="createEventForm">
-                <label for="eventName">Назва події:</label>
-                <input type="text" id="eventName" name="eventName" required>
-
-                <button type="submit" class="confirm-btn">Створити</button>
-            </form>
-        </div>
-    </div>
-
-    <script src="script.js"></script> 
+    <script src="script.js"></script>
 </body>
 </html>

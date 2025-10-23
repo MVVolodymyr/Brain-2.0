@@ -1,41 +1,143 @@
-// script.js
-const modal = document.getElementById("createEventModal");
-const openModalBtn = document.getElementById("openModalBtn");
-const closeBtn = document.getElementsByClassName("close-btn")[0];
-const createEventForm = document.getElementById("createEventForm");
-const eventNameInput = document.getElementById("eventName");
+// =================================================================
+// script.js - ЧИСТА РОБОЧА ВЕРСІЯ (Без модальних вікон)
+// =================================================================
 
-// *** ВАЖЛИВО: Замініть це на URL-адресу вашого API Gateway ***
-const API_ENDPOINT = 'https://6v0qdpjqq3.execute-api.us-east-1.amazonaws.com/Staging'; 
+// *** КОНФІГУРАЦІЯ ***
+const API_ENDPOINT = 'https://6v0qdpjqq3.execute-api.us-east-1.amazonaws.com/Staging/events'; 
+// *** ВИПРАВЛЕНО: ВИКОРИСТОВУЄМО НОВІ ID З HTML ***
+const EVENT_LIST_CONTAINER = document.getElementById('event-list-container');
+const CREATE_EVENT_FORM = document.getElementById('create-event-form');
+const EVENT_NAME_INPUT = document.getElementById('event-name-input');
 
-openModalBtn.onclick = () => { modal.style.display = "block"; eventNameInput.value = ''; };
-closeBtn.onclick = () => { modal.style.display = "none"; };
-window.onclick = (event) => { if (event.target === modal) modal.style.display = "none"; };
 
-createEventForm.onsubmit = function(event) {
-    event.preventDefault(); 
-    const eventName = eventNameInput.value.trim();
-    if (eventName === "") return alert("Будь ласка, введіть назву події.");
+// -----------------------------------------------------------------
+// 1. ФУНКЦІЯ: ОТРИМАННЯ ТА ВІДОБРАЖЕННЯ ДАНИХ (GET + СОРТУВАННЯ)
+// -----------------------------------------------------------------
+async function loadEvents() {
+    console.log("Завантаження даних...");
     
-    // 1. Надсилання POST-запиту до AWS
-    fetch(API_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: eventName })
-    })
-    .then(response => {
-        if (!response.ok) throw new Error('Помилка сервера: ' + response.status);
-        return response.json();
-    })
-    .then(data => {
-        alert(`Подія "${eventName}" (ID: ${data.id}) успішно створена. Сторінка буде перезавантажена.`);
-        // 2. Перезавантаження сторінки, як ви просили
-        window.location.reload(); 
-    })
-    .catch(error => {
-        console.error('Помилка створення івенту:', error);
-        alert('Помилка при створенні події. Перевірте консоль.');
-    });
-    
-    modal.style.display = "none";
+    // Перевірка існування контейнера 
+    if (!EVENT_LIST_CONTAINER) {
+        console.error("Контейнер списку подій не знайдено.");
+        return;
+    }
+
+    // Встановлюємо індикатор завантаження
+    const headerRow = EVENT_LIST_CONTAINER.querySelector('.header-row') ? EVENT_LIST_CONTAINER.querySelector('.header-row').outerHTML : '';
+    EVENT_LIST_CONTAINER.innerHTML = headerRow + '<div id="loading-indicator" class="table-row data-row"><div class="cell event-name-col" style="grid-column: 1 / span 4;">Завантаження...</div></div>';
+
+    try {
+        const response = await fetch(API_ENDPOINT, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Помилка отримання даних: ${response.status}`);
+        }
+
+        let events = await response.json();
+        
+        // Перевірка та парсинг JSON 
+        if (typeof events === 'string') {
+            try { events = JSON.parse(events); } catch (e) { events = []; }
+        }
+        if (!Array.isArray(events)) { events = []; }
+        
+        // СОРТУВАННЯ: Найновіші перші
+        events.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+
+        // Очищення контейнера
+        EVENT_LIST_CONTAINER.innerHTML = headerRow; 
+
+        if (events.length === 0) {
+            EVENT_LIST_CONTAINER.innerHTML += '<div class="table-row data-row"><div class="cell event-name-col" style="grid-column: 1 / span 4;">Жодної події не знайдено.</div></div>';
+            return;
+        }
+
+        events.forEach(event => {
+            // Форматування дати
+            const formatOptions = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
+            const createdDate = new Date(event.created_date).toLocaleString('uk-UA', formatOptions);
+            const lastUpdate = event.last_update ? new Date(event.last_update).toLocaleString('uk-UA', formatOptions) : 'N/A';
+            
+            const row = document.createElement('div');
+            row.className = 'table-row data-row';
+
+            row.innerHTML = `
+                <div class="cell event-name-col">${event.name || 'N/A'}</div>
+                <div class="cell created-col">${createdDate}</div>
+                <div class="cell modified-col">${lastUpdate}</div>
+                <div class="cell actions-col delete-action">
+                    <button class="action-btn delete-btn" onclick="handleDeleteEvent('${event.id}', '${event.name.replace(/'/g, "\\'")}')">🗑️</button>
+                </div>
+            `;
+            
+            EVENT_LIST_CONTAINER.appendChild(row);
+        });
+
+    } catch (error) {
+        console.error("Помилка завантаження івентів:", error);
+        EVENT_LIST_CONTAINER.innerHTML = headerRow + `<div class="table-row data-row"><div class="cell event-name-col" style="grid-column: 1 / span 4;">Помилка завантаження: ${error.message}</div></div>`;
+    }
 }
+
+
+// -----------------------------------------------------------------
+// 2. ФУНКЦІЯ: ВИДАЛЕННЯ ЕЛЕМЕНТА (DELETE)
+// -----------------------------------------------------------------
+window.handleDeleteEvent = async function(id, name) {
+    if (!confirm(`Ви впевнені, що хочете видалити подію "${name}" (ID: ${id})?`)) { return; }
+    
+    try {
+        const url = `${API_ENDPOINT}/${id}`;
+        const response = await fetch(url, { method: 'DELETE' });
+
+        if (!response.ok) { throw new Error(`Помилка сервера: ${response.status}`); }
+        
+        alert(`Подію "${name}" успішно видалено.`);
+        loadEvents(); 
+
+    } catch (error) {
+        console.error("Помилка видалення івенту:", error);
+        alert(`Не вдалося видалити подію: ${error.message}`);
+    }
+}
+
+
+// -----------------------------------------------------------------
+// 3. ФУНКЦІЯ: СТВОРЕННЯ НОВОГО ЕЛЕМЕНТА (POST)
+// -----------------------------------------------------------------
+if (CREATE_EVENT_FORM) {
+    CREATE_EVENT_FORM.onsubmit = async (event) => {
+        event.preventDefault();
+        
+        const eventName = EVENT_NAME_INPUT.value.trim();
+        if (!eventName) { alert("Будь ласка, введіть назву події."); return; }
+
+        try {
+            const response = await fetch(API_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: eventName }),
+            });
+
+            if (!response.ok) { throw new Error(`Помилка сервера: ${response.status}`); }
+
+            alert(`Подія "${eventName}" успішно створена.`);
+
+            EVENT_NAME_INPUT.value = ''; 
+            loadEvents(); 
+
+        } catch (error) {
+            console.error("Помилка створення івенту:", error);
+            alert(`Помилка створення івенту: ${error.message}`);
+        }
+    };
+}
+
+
+// -----------------------------------------------------------------
+// 4. ІНІЦІАЛІЗАЦІЯ
+// -----------------------------------------------------------------
+document.addEventListener('DOMContentLoaded', loadEvents);
