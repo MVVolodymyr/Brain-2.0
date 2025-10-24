@@ -6,6 +6,9 @@ window.onload = function() {
     // Перевіряємо, чи існує об'єкт Amplify, перш ніж його використовувати
     if (typeof Amplify !== 'undefined') {
         
+        // Імпортуємо Auth з Amplify
+        const { Auth } = Amplify;
+        
         // 1. КОНФІГУРАЦІЯ AWS AMPLIFY
         // !!! ВАЖЛИВО: ЗАМІНІТЬ ПАРАМЕТРИ !!!
         Amplify.configure({
