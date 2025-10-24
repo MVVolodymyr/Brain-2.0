@@ -2,7 +2,7 @@
 
 // 🚨 ВАЖЛИВО: Замініть цей об'єкт на ваші реальні налаштування AWS Cognito!
 const awsConfig = {
-     Auth: {
+    Auth: {
         // Ваш регіон (наприклад, 'us-east-1')
         region: 'us-east-1', 
         // ID Вашого Cognito User Pool
@@ -12,25 +12,22 @@ const awsConfig = {
     }
 };
 
-/**
- * Ініціалізує Amplify, налаштовує конфігурацію Cognito та додає обробник форми входу.
- */
-function initializeAmplifyAndLogin() {
-    const messageElement = document.getElementById('message'); 
-    
-    // 1. ПЕРЕВІРКА НАЯВНОСТІ AWS AMPLIFY
-    if (typeof Amplify === 'undefined' || typeof Amplify.Auth === 'undefined') {
-        const errorMsg = "Критична помилка: AWS Amplify не визначено. Перевірте підключення в HTML.";
-        console.error(errorMsg);
-        if (messageElement) { 
-             messageElement.textContent = errorMsg;
-        }
-        return; 
-    }
+const POLLING_INTERVAL = 100; // Перевіряти кожні 100 мілісекунд
+const MAX_WAIT_TIME = 5000;   // Максимально чекати 5 секунд
 
-    console.log('✅ AWS Amplify успішно завантажено. Ініціалізація...');
+function getMessageElement() {
+    return document.getElementById('message');
+}
+
+/**
+ * Основна логіка застосунку, яка виконується після успішного завантаження Amplify.
+ */
+function runAmplifyApp() {
+    const messageElement = getMessageElement();
+
+    console.log('✅ AWS Amplify успішно знайдено. Ініціалізація...');
     
-    // 2. КОНФІГУРАЦІЯ AMPLIFY
+    // 1. КОНФІГУРАЦІЯ AMPLIFY
     try {
         Amplify.configure(awsConfig);
         console.log('✅ Amplify налаштовано.');
@@ -42,7 +39,7 @@ function initializeAmplifyAndLogin() {
         return;
     }
 
-    // 3. ОБРОБНИК ФОРМИ ВХОДУ
+    // 2. ОБРОБНИК ФОРМИ ВХОДУ
     const loginForm = document.getElementById('loginForm');
     
     loginForm.addEventListener('submit', async (e) => {
@@ -64,9 +61,6 @@ function initializeAmplifyAndLogin() {
                 messageElement.textContent = `Успішний вхід користувача: ${username}`;
                 messageElement.style.color = 'green';
             }
-            
-            // window.location.href = '/dashboard.html'; 
-
         } catch (error) {
             console.error('Помилка входу:', error);
             
@@ -88,5 +82,43 @@ function initializeAmplifyAndLogin() {
     });
 }
 
-// 💥 ФІКС ПОМИЛКИ ГОНКИ: Запускаємо функцію лише після того, як ВСІ ресурси завантажені
-window.onload = initializeAmplifyAndLogin;
+
+/**
+ * 💥 FIX: Використовує опитування, щоб чекати на визначення об'єкта Amplify.
+ */
+function pollForAmplify(startTime) {
+    const messageElement = getMessageElement();
+    
+    if (typeof Amplify !== 'undefined' && typeof Amplify.Auth !== 'undefined') {
+        // Успіх! Amplify доступний.
+        runAmplifyApp();
+        return;
+    }
+
+    const elapsed = Date.now() - startTime;
+    if (elapsed > MAX_WAIT_TIME) {
+        // Таймаут! Бібліотека не завантажилась.
+        const errorMsg = `Критична помилка: AWS Amplify не визначено після ${MAX_WAIT_TIME / 1000} секунд. Перевірте підключення в HTML та мережу.`;
+        console.error(errorMsg);
+        if (messageElement) {
+             messageElement.textContent = errorMsg;
+             messageElement.style.color = 'red';
+        }
+        return;
+    }
+
+    // Повторити опитування
+    setTimeout(() => pollForAmplify(startTime), POLLING_INTERVAL);
+}
+
+// Запускаємо опитування лише після того, як DOM повністю завантажений.
+document.addEventListener('DOMContentLoaded', () => {
+    // Перевіряємо, чи існує елемент повідомлення
+    const messageElement = getMessageElement();
+    if (messageElement) {
+        messageElement.textContent = 'Очікування завантаження AWS Amplify...';
+        messageElement.style.color = 'gray';
+    }
+    
+    pollForAmplify(Date.now());
+});
