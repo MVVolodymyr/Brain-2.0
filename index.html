@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Авторизація</title>
-    <link rel="stylesheet" href="style.css"> </head>
-    
+    <title>Авторизація - Brain 2.0</title>
+    <link rel="stylesheet" href="style.css">
+</head>
 <body>
     <div class="container">
         <h1>Вхід</h1>
@@ -18,8 +18,14 @@
 
             <button type="submit">Увійти</button>
         </form>
+        
+        <!-- Message element for status updates -->
+        <p id="message" style="margin-top: 15px; text-align: center; font-weight: bold;"></p>
     </div>
 
+    <!-- Load AWS Amplify first -->
     <script src="https://unpkg.com/aws-amplify@latest/dist/aws-amplify.min.js"></script>
-    <script type="module" src="login.js"></script> </body>
+    <!-- Then load our login script (without module type) -->
+    <script src="login.js"></script>
+</body>
 </html>

@@ -69,8 +69,8 @@ function initializeAmplifyAndLogin() {
                 messageElement.style.color = 'green';
             }
             
-            // 💡 ТУТ ВИ ДОДАЄТЕ ПЕРЕНАПРАВЛЕННЯ:
-            // window.location.href = '/dashboard.html'; 
+            // Redirect to events page after successful login
+            window.location.href = '/events'; 
 
         } catch (error) {
             console.error('Помилка входу:', error);
@@ -95,4 +95,20 @@ function initializeAmplifyAndLogin() {
 }
 
 // 💥 ФІКС ПОМИЛКИ: Запускаємо функцію лише після того, як ВСІ ресурси (включно з Amplify) завантажені
-window.onload = initializeAmplifyAndLogin;
+// Використовуємо DOMContentLoaded для швидшого запуску
+document.addEventListener('DOMContentLoaded', function() {
+    // Додаємо невелику затримку, щоб Amplify встиг завантажитися
+    setTimeout(initializeAmplifyAndLogin, 100);
+    
+    // Fallback: якщо Amplify не завантажився через 2 секунди, показуємо помилку
+    setTimeout(function() {
+        if (typeof Amplify === 'undefined') {
+            const messageElement = document.getElementById('message');
+            if (messageElement) {
+                messageElement.textContent = 'Помилка завантаження AWS Amplify. Перевірте інтернет-з\'єднання.';
+                messageElement.style.color = 'red';
+            }
+            console.error('AWS Amplify failed to load after 2 seconds');
+        }
+    }, 2000);
+});
