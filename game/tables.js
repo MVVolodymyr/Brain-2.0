@@ -179,12 +179,147 @@ class TableManager {
         }
     }
 
-    // Get team color from table ID
+    // Get team color from table ID - improved version
     getTeamColorFromTableId(tableId) {
-        // This is a simplified mapping - you might need to adjust based on your table structure
-        // For now, we'll assume all tables are for all teams and we'll need to determine the team
-        // based on the current context or table structure
-        return 'red'; // Default to red team - this should be determined by the current context
+        // For now, we'll process all teams' data from the JSON
+        // This method will be called for each team when processing JSON data
+        return 'all'; // Indicates we should process all teams
+    }
+
+    // Process JSON data for all teams
+    processAllTeamsData(jsonData) {
+        try {
+            if (!jsonData.teams) {
+                console.warn('No teams data in JSON');
+                return;
+            }
+
+            const gameState = window.gameState || null;
+            if (!gameState) {
+                console.warn('GameState not available');
+                return;
+            }
+
+            const currentState = gameState.getState();
+            
+            // Update each team's data
+            Object.keys(jsonData.teams).forEach(teamColor => {
+                if (currentState.teams[teamColor] && jsonData.teams[teamColor]) {
+                    currentState.teams[teamColor] = {
+                        ...currentState.teams[teamColor],
+                        ...jsonData.teams[teamColor]
+                    };
+                }
+            });
+            
+            // Update the game state
+            gameState.updateState({ teams: currentState.teams });
+            
+            // Apply data to all tables
+            this.applyAllTeamsDataToTables(currentState.teams);
+            
+        } catch (error) {
+            this.errorHandler.handle(error, 'Process All Teams Data');
+        }
+    }
+
+    // Apply all teams data to tables
+    applyAllTeamsDataToTables(teamsData) {
+        try {
+            // For each team, apply their data to the corresponding table columns
+            const teamColors = ['red', 'green', 'blue', 'white', 'yellow', 'pink'];
+            
+            teamColors.forEach(teamColor => {
+                if (teamsData[teamColor]) {
+                    const teamData = teamsData[teamColor];
+                    
+                    // Apply yesNo data
+                    this.applyTeamDataToTableColumn('tableYesNo', teamColor, teamData.yesNo);
+                    
+                    // Apply simple data
+                    this.applyTeamDataToTableColumn('tableSimple', teamColor, teamData.simple);
+                    
+                    // Apply hard data
+                    this.applyTeamDataToTableColumn('tableHard', teamColor, teamData.hard);
+                    
+                    // Apply cap data
+                    this.applyTeamDataToTableColumn('tableCap', teamColor, teamData.cap);
+                }
+            });
+            
+        } catch (error) {
+            this.errorHandler.handle(error, 'Apply All Teams Data to Tables');
+        }
+    }
+
+    // Apply team data to specific table column
+    applyTeamDataToTableColumn(tableId, teamColor, data) {
+        try {
+            const table = document.getElementById(tableId);
+            if (!table || !data) return;
+
+            // Find the column for this team color
+            const teamColumnIndex = this.getTeamColumnIndex(tableId, teamColor);
+            if (teamColumnIndex === -1) return;
+
+            // Apply data to the column
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach((row, rowIndex) => {
+                const cells = row.querySelectorAll('td');
+                if (cells[teamColumnIndex]) {
+                    const input = cells[teamColumnIndex].querySelector('input');
+                    if (input && data[rowIndex] !== undefined) {
+                        input.value = data[rowIndex];
+                    }
+                }
+            });
+
+            this.updateColumnSums(tableId);
+            
+        } catch (error) {
+            this.errorHandler.handle(error, 'Apply Team Data to Table Column');
+        }
+    }
+
+    // Get team column index in table
+    getTeamColumnIndex(tableId, teamColor) {
+        try {
+            const table = document.getElementById(tableId);
+            if (!table) return -1;
+
+            const headerRow = table.querySelector('thead tr');
+            if (!headerRow) return -1;
+
+            const headers = headerRow.querySelectorAll('th');
+            for (let i = 0; i < headers.length; i++) {
+                const headerText = headers[i].textContent.toLowerCase();
+                if (headerText.includes(teamColor)) {
+                    return i;
+                }
+            }
+
+            // Fallback: try to find by team name
+            const teamNames = {
+                red: 'red',
+                green: 'green', 
+                blue: 'blue',
+                white: 'white',
+                yellow: 'yellow',
+                pink: 'pink'
+            };
+
+            for (let i = 0; i < headers.length; i++) {
+                const headerText = headers[i].textContent.toLowerCase();
+                if (headerText.includes(teamNames[teamColor])) {
+                    return i;
+                }
+            }
+
+            return -1;
+        } catch (error) {
+            this.errorHandler.handle(error, 'Get Team Column Index');
+            return -1;
+        }
     }
 
     // Load table data from new JSON format

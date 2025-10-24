@@ -65,12 +65,21 @@ async function loadEvents() {
             row.className = 'table-row data-row clickable-row';
             row.style.cursor = 'pointer';
             
-            // Add click handler to open game in new tab
+            // Add click handler to open game in new tab with event data
             row.onclick = (e) => {
                 // Prevent click when clicking on delete button
                 if (e.target.classList.contains('action-btn') || e.target.closest('.action-btn')) {
                     return;
                 }
+                // Store event data in sessionStorage for the game page to access
+                sessionStorage.setItem('selectedEvent', JSON.stringify({
+                    id: event.id,
+                    name: event.name,
+                    link_to_csv: event.link_to_csv,
+                    link_to_json: event.link_to_json,
+                    created_date: event.created_date,
+                    last_update: event.last_update
+                }));
                 // Open game page in new tab
                 window.open('/game', '_blank');
             };
