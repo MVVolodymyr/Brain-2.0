@@ -4,15 +4,68 @@
  */
 class GameState {
     constructor() {
+        // Generate session ID based on current timestamp
+        const now = new Date();
+        const sessionId = `session_${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, '0')}_${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}_${String(now.getMinutes()).padStart(2, '0')}_${String(now.getSeconds()).padStart(2, '0')}`;
+        
         this.state = {
-            teams: {
-                red: { name: "Red Team", points: 0, visible: true },
-                green: { name: "Green Team", points: 0, visible: true },
-                blue: { name: "Blue Team", points: 0, visible: true },
-                white: { name: "White Team", points: 0, visible: true },
-                yellow: { name: "Yellow Team", points: 0, visible: true },
-                pink: { name: "Pink Team", points: 0, visible: true }
+            sessionId: sessionId,
+            timestamp: now.toISOString(),
+            metadata: {
+                gameDate: now.toISOString().split('T')[0],
+                lastModified: now.toISOString()
             },
+            teams: {
+                red: {
+                    name: "Red Team",
+                    visible: true,
+                    yesNo: [0],
+                    simple: new Array(40).fill(0),
+                    hard: new Array(20).fill(0),
+                    cap: new Array(10).fill(0)
+                },
+                green: {
+                    name: "Green Team",
+                    visible: true,
+                    yesNo: [0],
+                    simple: new Array(40).fill(0),
+                    hard: new Array(20).fill(0),
+                    cap: new Array(10).fill(0)
+                },
+                blue: {
+                    name: "Blue Team",
+                    visible: true,
+                    yesNo: [0],
+                    simple: new Array(40).fill(0),
+                    hard: new Array(20).fill(0),
+                    cap: new Array(10).fill(0)
+                },
+                white: {
+                    name: "White Team",
+                    visible: true,
+                    yesNo: [0],
+                    simple: new Array(40).fill(0),
+                    hard: new Array(20).fill(0),
+                    cap: new Array(10).fill(0)
+                },
+                yellow: {
+                    name: "Yellow Team",
+                    visible: true,
+                    yesNo: [0],
+                    simple: new Array(40).fill(0),
+                    hard: new Array(20).fill(0),
+                    cap: new Array(10).fill(0)
+                },
+                pink: {
+                    name: "Pink Team",
+                    visible: true,
+                    yesNo: [0],
+                    simple: new Array(40).fill(0),
+                    hard: new Array(20).fill(0),
+                    cap: new Array(10).fill(0)
+                }
+            },
+            // Legacy fields for backward compatibility
             currentRound: 2,
             currentQuestion: 1,
             timer: { active: false, duration: 0, remaining: 0 },
@@ -80,6 +133,8 @@ class GameState {
     // Save state to localStorage
     saveToStorage() {
         try {
+            // Update metadata before saving
+            this.state.metadata.lastModified = new Date().toISOString();
             localStorage.setItem('brainRingState', JSON.stringify(this.state));
         } catch (error) {
             console.error('Error saving state to storage:', error);
@@ -88,15 +143,67 @@ class GameState {
 
     // Reset state
     reset() {
+        const now = new Date();
+        const sessionId = `session_${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, '0')}_${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}_${String(now.getMinutes()).padStart(2, '0')}_${String(now.getSeconds()).padStart(2, '0')}`;
+        
         this.state = {
-            teams: {
-                red: { name: "Red Team", points: 0, visible: true },
-                green: { name: "Green Team", points: 0, visible: true },
-                blue: { name: "Blue Team", points: 0, visible: true },
-                white: { name: "White Team", points: 0, visible: true },
-                yellow: { name: "Yellow Team", points: 0, visible: true },
-                pink: { name: "Pink Team", points: 0, visible: true }
+            sessionId: sessionId,
+            timestamp: now.toISOString(),
+            metadata: {
+                gameDate: now.toISOString().split('T')[0],
+                lastModified: now.toISOString()
             },
+            teams: {
+                red: {
+                    name: "Red Team",
+                    visible: true,
+                    yesNo: [0],
+                    simple: new Array(40).fill(0),
+                    hard: new Array(20).fill(0),
+                    cap: new Array(10).fill(0)
+                },
+                green: {
+                    name: "Green Team",
+                    visible: true,
+                    yesNo: [0],
+                    simple: new Array(40).fill(0),
+                    hard: new Array(20).fill(0),
+                    cap: new Array(10).fill(0)
+                },
+                blue: {
+                    name: "Blue Team",
+                    visible: true,
+                    yesNo: [0],
+                    simple: new Array(40).fill(0),
+                    hard: new Array(20).fill(0),
+                    cap: new Array(10).fill(0)
+                },
+                white: {
+                    name: "White Team",
+                    visible: true,
+                    yesNo: [0],
+                    simple: new Array(40).fill(0),
+                    hard: new Array(20).fill(0),
+                    cap: new Array(10).fill(0)
+                },
+                yellow: {
+                    name: "Yellow Team",
+                    visible: true,
+                    yesNo: [0],
+                    simple: new Array(40).fill(0),
+                    hard: new Array(20).fill(0),
+                    cap: new Array(10).fill(0)
+                },
+                pink: {
+                    name: "Pink Team",
+                    visible: true,
+                    yesNo: [0],
+                    simple: new Array(40).fill(0),
+                    hard: new Array(20).fill(0),
+                    cap: new Array(10).fill(0)
+                }
+            },
+            // Legacy fields for backward compatibility
             currentRound: 2,
             currentQuestion: 1,
             timer: { active: false, duration: 0, remaining: 0 },

@@ -141,18 +141,106 @@ class TableManager {
         }
     }
 
-    saveTableState(tableId) {
+    // Save table data to new JSON format
+    saveTableDataToNewFormat(tableId, teamData) {
+        try {
+            const gameState = window.gameState || null;
+            if (!gameState) {
+                console.warn('GameState not available, falling back to localStorage');
+                this.saveTableState(tableId);
+                return;
+            }
+
+            const state = gameState.getState();
+            const teamColor = this.getTeamColorFromTableId(tableId);
+            
+            if (state.teams[teamColor]) {
+                // Update the specific table data for the team
+                switch(tableId) {
+                    case 'tableYesNo':
+                        state.teams[teamColor].yesNo = teamData;
+                        break;
+                    case 'tableSimple':
+                        state.teams[teamColor].simple = teamData;
+                        break;
+                    case 'tableHard':
+                        state.teams[teamColor].hard = teamData;
+                        break;
+                    case 'tableCap':
+                        state.teams[teamColor].cap = teamData;
+                        break;
+                }
+                
+                // Update the game state
+                gameState.updateState({ teams: state.teams });
+            }
+        } catch (error) {
+            this.errorHandler.handle(error, 'Save Table Data to New Format');
+        }
+    }
+
+    // Get team color from table ID
+    getTeamColorFromTableId(tableId) {
+        // This is a simplified mapping - you might need to adjust based on your table structure
+        // For now, we'll assume all tables are for all teams and we'll need to determine the team
+        // based on the current context or table structure
+        return 'red'; // Default to red team - this should be determined by the current context
+    }
+
+    // Load table data from new JSON format
+    loadTableDataFromNewFormat(tableId) {
+        try {
+            const gameState = window.gameState || null;
+            if (!gameState) {
+                console.warn('GameState not available, falling back to localStorage');
+                this.loadTableState(tableId);
+                return;
+            }
+
+            const state = gameState.getState();
+            const teamColor = this.getTeamColorFromTableId(tableId);
+            
+            if (state.teams[teamColor]) {
+                let teamData = [];
+                switch(tableId) {
+                    case 'tableYesNo':
+                        teamData = state.teams[teamColor].yesNo || [0];
+                        break;
+                    case 'tableSimple':
+                        teamData = state.teams[teamColor].simple || new Array(40).fill(0);
+                        break;
+                    case 'tableHard':
+                        teamData = state.teams[teamColor].hard || new Array(20).fill(0);
+                        break;
+                    case 'tableCap':
+                        teamData = state.teams[teamColor].cap || new Array(10).fill(0);
+                        break;
+                }
+                
+                // Apply the data to the table
+                this.applyDataToTable(tableId, teamData);
+            }
+        } catch (error) {
+            this.errorHandler.handle(error, 'Load Table Data from New Format');
+        }
+    }
+
+    // Apply data array to table inputs
+    applyDataToTable(tableId, data) {
         try {
             const table = document.getElementById(tableId);
             if (!table) return;
 
             const inputs = table.querySelectorAll("input[data-col]");
-            const data = Array.from(inputs).map(input => input.value);
+            inputs.forEach((input, index) => {
+                if (data[index] !== undefined) {
+                    input.value = data[index];
+                }
+            });
 
-            localStorage.setItem(`tableData-${tableId}`, JSON.stringify(data));
-
+            this.updateColumnSums(tableId);
         } catch (error) {
-            this.errorHandler.handle(error, 'Save Table State');
+            this.errorHandler.handle(error, 'Apply Data to Table');
         }
     }
 
@@ -435,26 +523,73 @@ class TableManager {
         }
     }
 
-    clearAllTables() {
+    // Export game data in new JSON format
+    exportGameDataAsJSON() {
         try {
-            const tableIds = ["tableYesNo", "tableSimple", "tableHard", "tableCap"];
+            const gameState = window.gameState || null;
+            if (!gameState) {
+                console.warn('GameState not available for export');
+                return null;
+            }
 
-            tableIds.forEach(tableId => {
-                localStorage.removeItem(`tableData-${tableId}`);
-                
-                const table = document.getElementById(tableId);
-                if (!table) return;
+            const state = gameState.getState();
+            
+            // Create export data in the new format
+            const exportData = {
+                sessionId: state.sessionId,
+                timestamp: state.timestamp,
+                metadata: {
+                    gameDate: state.metadata.gameDate,
+                    lastModified: new Date().toISOString()
+                },
+                teams: {}
+            };
 
-                const inputs = table.querySelectorAll("input[data-col]");
-                inputs.forEach(input => {
-                    input.value = "";
-                });
-
-                this.updateColumnSums(tableId);
+            // Copy team data
+            Object.keys(state.teams).forEach(teamColor => {
+                exportData.teams[teamColor] = {
+                    name: state.teams[teamColor].name,
+                    visible: state.teams[teamColor].visible,
+                    yesNo: [...state.teams[teamColor].yesNo],
+                    simple: [...state.teams[teamColor].simple],
+                    hard: [...state.teams[teamColor].hard],
+                    cap: [...state.teams[teamColor].cap]
+                };
             });
 
+            return exportData;
         } catch (error) {
-            this.errorHandler.handle(error, 'Clear All Tables');
+            this.errorHandler.handle(error, 'Export Game Data as JSON');
+            return null;
+        }
+    }
+
+    // Download game data as JSON file
+    downloadGameDataAsJSON() {
+        try {
+            const gameData = this.exportGameDataAsJSON();
+            if (!gameData) {
+                alert('No game data available to export');
+                return;
+            }
+
+            const dataStr = JSON.stringify(gameData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `brain_ring_game_${gameData.sessionId}.json`;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            URL.revokeObjectURL(url);
+            
+            console.log('Game data exported successfully');
+        } catch (error) {
+            this.errorHandler.handle(error, 'Download Game Data as JSON');
         }
     }
 }
