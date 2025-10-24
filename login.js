@@ -1,5 +1,4 @@
-// login.js (або в index.html <script>)
-import { Amplify, Auth } from 'aws-amplify';
+
 
 // *** КОНФІГУРАЦІЯ: Замініть на ваші дані Cognito ***
 Amplify.configure({
