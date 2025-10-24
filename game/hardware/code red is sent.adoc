@@ -1,0 +1,84 @@
+#include <WiFi.h>
+#include <PubSubClient.h>
+
+// 🔧 Налаштування Wi-Fi та MQTT
+const char* ssid       = "DIRECT-NS-brain";
+const char* password   = "87654321";
+const char* mqttServer = "192.168.100.69";  // IP твого MQTT-брокера
+const int   mqttPort   = 1883;
+
+// 🔘 GPIO кнопок
+const int btnInternal = 0;  // Вбудована кнопка (BOOT)
+const int btnExternal = 9;  // Зовнішня кнопка (підключи її сюди)
+
+// повідомлення і топік (⚠️ редагуєш вручну при прошивці)
+const char* mqttPayload = "Blue";  // ← сюди підставляєш, наприклад: "Red", "Blue", "Kitchen", тощо
+
+// 🧠 Стани кнопок
+bool lastInternal = HIGH;
+bool lastExternal = HIGH;
+
+// MQTT
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+void setupWifi() {
+Serial.print("🔌 Connecting to Wi-Fi");
+WiFi.begin(ssid, password);
+while (WiFi.status() != WL_CONNECTED) {
+delay(500);
+Serial.print(".");
+}
+Serial.println("\n✅ Wi-Fi connected!");
+Serial.print("📡 IP Address: ");
+Serial.println(WiFi.localIP());
+}
+
+void reconnect() {
+Serial.print("🔄 Connecting to MQTT");
+while (!client.connected()) {
+if (client.connect(mqttPayload)) {
+Serial.println("\n✅ MQTT connected!");
+} else {
+Serial.print(".");
+delay(500);
+}
+}
+}
+
+void setup() {
+Serial.begin(115200);
+pinMode(btnInternal, INPUT_PULLUP); // BOOT
+pinMode(btnExternal, INPUT_PULLUP); // Зовнішня кнопка
+
+  setupWifi();
+  client.setServer(mqttServer, mqttPort);
+  reconnect();
+}
+
+void loop() {
+if (!client.connected()) reconnect();
+client.loop();
+
+  // ---------- BOOT кнопка ----------
+  int readingInt = digitalRead(btnInternal);
+  if (readingInt == LOW && lastInternal == HIGH) {
+    delay(20);  // debounce
+    if (digitalRead(btnInternal) == LOW) {
+      Serial.println("Кнопка BOOT натиснута");
+      client.publish("esp32/button", mqttPayload); // - Змінюємо для кнопки
+    }
+  }
+  lastInternal = readingInt;
+
+  // ---------- Зовнішня кнопка ----------
+  int readingExt = digitalRead(btnExternal);
+  if (readingExt == LOW && lastExternal == HIGH) {
+    delay(20);  // debounce
+    if (digitalRead(btnExternal) == LOW) {
+      Serial.println("Зовнішня кнопка натиснута");
+      client.publish("esp32/button", mqttPayload); // - Змінюємо для кнопки
+    }
+  }
+  lastExternal = readingExt;
+}

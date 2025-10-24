@@ -10,4 +10,9 @@ router.get('/events', (req, res) => {
     res.sendFile('events.html', { root: 'public' });
 });
 
+// Add route for game page
+router.get('/game', (req, res) => {
+    res.sendFile('index.html', { root: 'game' });
+});
+
 module.exports = router;

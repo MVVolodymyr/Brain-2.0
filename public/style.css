@@ -107,6 +107,14 @@ body {
 .data-row {
     background-color: #ffffff; /* Змінено на білий для кращої читабельності */
     height: 60px; 
+    transition: background-color 0.2s ease;
+}
+
+/* Стилі для клікабельних рядків */
+.clickable-row:hover {
+    background-color: #f0f8ff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Стилі для комірок */

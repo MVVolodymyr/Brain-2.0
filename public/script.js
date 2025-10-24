@@ -62,7 +62,18 @@ async function loadEvents() {
             const lastUpdate = event.last_update ? new Date(event.last_update).toLocaleString('uk-UA', formatOptions) : createdDate;
             
             const row = document.createElement('div');
-            row.className = 'table-row data-row';
+            row.className = 'table-row data-row clickable-row';
+            row.style.cursor = 'pointer';
+            
+            // Add click handler to open game in new tab
+            row.onclick = (e) => {
+                // Prevent click when clicking on delete button
+                if (e.target.classList.contains('action-btn') || e.target.closest('.action-btn')) {
+                    return;
+                }
+                // Open game page in new tab
+                window.open('/game', '_blank');
+            };
 
             row.innerHTML = `
                 <div class="cell event-name-col">${event.name || 'N/A'}</div>
