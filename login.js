@@ -14,26 +14,23 @@ const awsConfig = {
 
 /**
  * Ініціалізує Amplify, налаштовує конфігурацію Cognito та додає обробник форми входу.
- * Ця функція запускається лише після повного завантаження сторінки (включно з Amplify).
  */
 function initializeAmplifyAndLogin() {
-    // 1. Отримання елемента для повідомлень
-    // Вам ПОТРІБНО додати <p id="message"></p> у ваш HTML, щоб це працювало!
     const messageElement = document.getElementById('message'); 
     
-    // 2. ПЕРЕВІРКА НАЯВНОСТІ AWS AMPLIFY
+    // 1. ПЕРЕВІРКА НАЯВНОСТІ AWS AMPLIFY
     if (typeof Amplify === 'undefined' || typeof Amplify.Auth === 'undefined') {
         const errorMsg = "Критична помилка: AWS Amplify не визначено. Перевірте підключення в HTML.";
         console.error(errorMsg);
         if (messageElement) { 
              messageElement.textContent = errorMsg;
         }
-        return; // Зупиняємо виконання
+        return; 
     }
 
     console.log('✅ AWS Amplify успішно завантажено. Ініціалізація...');
     
-    // 3. КОНФІГУРАЦІЯ AMPLIFY (З'єднання з Cognito)
+    // 2. КОНФІГУРАЦІЯ AMPLIFY
     try {
         Amplify.configure(awsConfig);
         console.log('✅ Amplify налаштовано.');
@@ -45,7 +42,7 @@ function initializeAmplifyAndLogin() {
         return;
     }
 
-    // 4. ОБРОБНИК ФОРМИ ВХОДУ
+    // 3. ОБРОБНИК ФОРМИ ВХОДУ
     const loginForm = document.getElementById('loginForm');
     
     loginForm.addEventListener('submit', async (e) => {
@@ -60,7 +57,6 @@ function initializeAmplifyAndLogin() {
         const password = e.target.password.value;
         
         try {
-            // Використання методу signIn з Auth модуля Amplify для автентифікації
             const user = await Amplify.Auth.signIn(username, password);
             
             console.log('Успішний вхід:', user);
@@ -69,15 +65,13 @@ function initializeAmplifyAndLogin() {
                 messageElement.style.color = 'green';
             }
             
-            // Redirect to events page after successful login
-            window.location.href = '/events'; 
+            // window.location.href = '/dashboard.html'; 
 
         } catch (error) {
             console.error('Помилка входу:', error);
             
             let displayMessage;
             
-            // Обробка типових помилок Cognito
             if (error.code === 'UserNotFoundException' || error.code === 'NotAuthorizedException') {
                 displayMessage = 'Невірне ім\'я користувача або пароль.';
             } else if (error.code === 'UserNotConfirmedException') {
@@ -94,21 +88,5 @@ function initializeAmplifyAndLogin() {
     });
 }
 
-// 💥 ФІКС ПОМИЛКИ: Запускаємо функцію лише після того, як ВСІ ресурси (включно з Amplify) завантажені
-// Використовуємо DOMContentLoaded для швидшого запуску
-document.addEventListener('DOMContentLoaded', function() {
-    // Додаємо невелику затримку, щоб Amplify встиг завантажитися
-    setTimeout(initializeAmplifyAndLogin, 100);
-    
-    // Fallback: якщо Amplify не завантажився через 2 секунди, показуємо помилку
-    setTimeout(function() {
-        if (typeof Amplify === 'undefined') {
-            const messageElement = document.getElementById('message');
-            if (messageElement) {
-                messageElement.textContent = 'Помилка завантаження AWS Amplify. Перевірте інтернет-з\'єднання.';
-                messageElement.style.color = 'red';
-            }
-            console.error('AWS Amplify failed to load after 2 seconds');
-        }
-    }, 2000);
-});
+// 💥 ФІКС ПОМИЛКИ ГОНКИ: Запускаємо функцію лише після того, як ВСІ ресурси завантажені
+window.onload = initializeAmplifyAndLogin;

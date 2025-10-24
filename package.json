@@ -12,7 +12,12 @@
     "type": "git",
     "url": "git+https://github.com/MVVolodymyr/Brain-2.0.git"
   },
-  "keywords": ["events", "management", "express", "nodejs"],
+  "keywords": [
+    "events",
+    "management",
+    "express",
+    "nodejs"
+  ],
   "author": "Volodymyr Mishchenko",
   "license": "ISC",
   "type": "commonjs",
@@ -21,7 +26,9 @@
   },
   "homepage": "https://github.com/MVVolodymyr/Brain-2.0#readme",
   "dependencies": {
+    "aws-amplify": "^6.15.7",
     "ejs": "^3.1.10",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "path": "^0.12.7"
   }
 }
